@@ -1,15 +1,15 @@
 // ==UserScript==
-// @name         크랙(CRACK) 제작 초집중 모드
+// @name         크랙(CRACK) 초집중 모드
 // @namespace    http://tampermonkey.net/
-// @version      1.0
-// @description  성적 스트레스 보호
+// @version      2.0
+// @description  성적 스트레스 보호기 
 // @match        *://*/*
 // @grant        none
 // ==/UserScript==
 
 (function() {
     'use strict';
-  
+
     const hideTitles = [
         '성인 인기 랭킹',
         '공식 크리에이터들의 뜨거운 신작',
@@ -27,7 +27,7 @@
         document.querySelectorAll('p').forEach(p => {
             const text = p.textContent.trim();
             if (!text) return;
-          
+
             if (hideTitles.includes(text)) {
                 const sectionWrapper = p.closest('.flex-col.w-full');
                 if (sectionWrapper && sectionWrapper.style.display !== 'none') {
@@ -39,15 +39,21 @@
                 const parent = p.parentElement;
                 if (!parent) return;
 
-                const dotWrapper = p.nextElementSibling;
-                if (dotWrapper && dotWrapper.querySelector('.bg-line-gray-2')) {
+                if (p.classList.contains('text-line-gray-2')) {
                     p.style.display = 'none';
-                    dotWrapper.style.display = 'none';
+
+                    const dotWrapper = p.nextElementSibling;
+                    if (dotWrapper && dotWrapper.querySelector('.bg-line-gray-2')) {
+                        dotWrapper.style.display = 'none';
+                    }
                     return;
                 }
 
-                if (parent.tagName === 'DIV' && parent.querySelector('svg')) {
-                    parent.style.display = 'none';
+                if (p.classList.contains('typo-text-xs_leading-none_medium')) {
+                    if (parent.tagName === 'DIV' && parent.querySelector('svg')) {
+                        parent.style.display = 'none';
+                        return;
+                    }
                 }
             }
         });
@@ -55,8 +61,10 @@
 
     cleanUpJunk();
 
+    let timeout;
     const observer = new MutationObserver(() => {
-        cleanUpJunk();
+        clearTimeout(timeout);
+        timeout = setTimeout(cleanUpJunk, 50);
     });
 
     observer.observe(document.body, { childList: true, subtree: true });
